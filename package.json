@@ -1,0 +1,20 @@
+{
+  "name": "s7-bot-ofc",
+  "version": "1.0.0",
+  "description": "S7-Bot-OFC - Bot oficial de WhatsApp con vinculación por código de 8 dígitos",
+  "main": "index.js",
+  "author": "AmilcarGit",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.9",
+    "libsignal": "npm:libsignal-node@latest",
+    "pino": "^9.3.2",
+    "qrcode-terminal": "^0.12.0",
+    "chalk": "^4.1.2",
+    "axios": "^1.7.7",
+    "fs-extra": "^11.2.0"
+  }
+}
