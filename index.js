@@ -14,6 +14,9 @@ import config from "./config.js";
 import { handleMessage } from "./lib/messageHandler.js";
 import { handleGroupUpdate } from "./lib/groupHandler.js";
 
+// Tiempo de inicio del bot (para mostrar uptime en el menú)
+global.botStartTime = Date.now();
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SESSION_DIR = path.join(__dirname, "session");
 
