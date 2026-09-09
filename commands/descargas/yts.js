@@ -11,13 +11,27 @@ const API_KEY = process.env.ORBIT_API_KEY || "ORBIT-4096939993";
 const API_URL = "https://api-orbit-9doj.onrender.com/api/v1/search";
 
 async function buscarEnYoutube(query) {
-  const url = `${API_URL}?apikey=${encodeURIComponent(API_KEY)}&query=${encodeURIComponent(query)}`;
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const url = `\( {API_URL}?apikey= \){encodeURIComponent(API_KEY)}&query=${encodeURIComponent(query)}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120.0.0.0 Mobile Safari/537.36",
+      "Accept": "application/json",
+      "Accept-Language": "es-PE,es;q=0.9",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+  }
+
   const data = await response.json();
+
   if (!data || data.status !== true || !Array.isArray(data.results)) {
     throw new Error("La API de Orbit no devolvió resultados válidos");
   }
+
   return data.results;
 }
 
@@ -56,28 +70,29 @@ export async function ejecutar(sock, info, args, contexto) {
     const clave = claveBusqueda(contexto.chatId, contexto.remitente);
     guardarBusqueda(clave, resultados);
 
-    await enviarLista(sock, contexto.chatId, {
-      texto: `🔎 *Resultados para:* ${query}\n\n🎬 Encontrados: ${resultados.length}`,
-      footer: "Selecciona un video · expira en 3 minutos",
-      titulo: "YouTube Search",
-      textoBoton: "Ver resultados",
-      mensajeCitado: info,
-      secciones: [
-        {
-          titulo: `${resultados.length} resultado(s)`,
-          filas: resultados.map((video, i) => ({
-            titulo: (video.title || "Sin título").slice(0, 60),
-            id: `${p}ytsver ${i}`,
-            descripcion: `${(video.author || "Desconocido").slice(0, 35)} · ${video.duration || "?"}`,
-          })),
-        },
-      ],
+    // Enviar resultados como texto simple (más estable)
+    let texto = `🔎 *Resultados para:* ${query}\n\n`;
+
+    resultados.forEach((video, i) => {
+      texto += `*${i + 1}.* ${video.title || "Sin título"}\n`;
+      texto += `👤 ${video.author || "Desconocido"} | ⏱️ ${video.duration || "?"}\n`;
+      texto += `🔗 ${video.url}\n\n`;
     });
+
+    texto += `_Responde con el número para más opciones (próximamente)_`;
+
+    await sock.sendMessage(contexto.chatId, { text: texto }, { quoted: info });
+
   } catch (error) {
     console.error("[YTS]", error);
     await sock.sendMessage(
       contexto.chatId,
-      { text: `❌ Ocurrió un error al buscar.\n\n> ${error.message || "Error desconocido"}` },
+      {
+        text:
+          `❌ Error al buscar en YouTube\n\n` +
+          `> ${error.message || "Error desconocido"}\n\n` +
+          `_Si es HTTP 403, revisa la IP autorizada en Orbit API_`,
+      },
       { quoted: info }
     );
   }
