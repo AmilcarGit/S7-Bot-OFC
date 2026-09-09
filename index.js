@@ -41,6 +41,20 @@ function mostrarBanner() {
   console.log(chalk.gray("──────────────────────────────────────────────\n"));
 }
 
+// Extraer texto del mensaje para mostrar en logs
+function extraerTextoLog(mensaje) {
+  if (!mensaje) return "";
+  return (
+    mensaje.conversation ||
+    mensaje.extendedTextMessage?.text ||
+    mensaje.imageMessage?.caption ||
+    mensaje.videoMessage?.caption ||
+    mensaje.buttonsResponseMessage?.selectedButtonId ||
+    mensaje.listResponseMessage?.singleSelectReply?.selectedRowId ||
+    "[multimedia / sin texto]"
+  );
+}
+
 async function startBot() {
   mostrarBanner();
 
@@ -116,6 +130,26 @@ async function startBot() {
   // --- Mensajes entrantes ---
   sock.ev.on("messages.upsert", async (m) => {
     try {
+      const info = m.messages?.[0];
+      if (!info || !info.message || info.key.fromMe) return;
+
+      const chatId = info.key.remoteJid;
+      const esGrupo = chatId.endsWith("@g.us");
+      const remitente = esGrupo ? info.key.participant : chatId;
+      const numero = (remitente || "").split("@")[0];
+      const texto = extraerTextoLog(info.message);
+
+      // Mostrar mensaje en los logs
+      const tipo = esGrupo ? chalk.magenta("GRUPO") : chalk.blue("PRIVADO");
+      const hora = new Date().toLocaleTimeString("es-PE", { hour12: false });
+
+      console.log(
+        chalk.gray(`[${hora}]`) +
+        ` ${tipo} ` +
+        chalk.yellow(numero) +
+        chalk.white(` → ${texto}`)
+      );
+
       await handleMessage(sock, m);
     } catch (err) {
       console.error(chalk.red("❌ Error procesando mensaje:"), err.message);
