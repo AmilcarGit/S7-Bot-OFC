@@ -51,13 +51,15 @@ export async function ejecutar(sock, info, args, contexto) {
 
 Selecciona una categoría:`;
 
+  const imagen = global.menuImageBuffer || config.menuImage;
+
   try {
     await enviarLista(sock, contexto.chatId, {
       texto,
       footer: `${config.botName} • Sistema operativo`,
       titulo: "📋 Menú Principal",
       textoBoton: "Abrir menú",
-      imagen: config.menuImage,
+      imagen,
       mensajeCitado: info,
       secciones: [
         {
@@ -95,46 +97,11 @@ Selecciona una categoría:`;
       ],
     });
   } catch (err) {
-    console.error("Error enviando menú con lista:", err.message);
+    console.error("Error enviando menú:", err.message);
 
-    // Fallback si falla la lista
-    const textoFallback = `╭━━━━━━━━━━━━━━━━━━━╮
-┃  *${config.botName}*
-╰━━━━━━━━━━━━━━━━━━━╯
-
-📅 Fecha: ${fecha}
-🕐 Hora Perú: ${hora}
-⏱️ Activo: ${uptime}
-📌 Prefijo: ${config.prefix.join(" | ")}
-
-🔥 *GENERAL*
-• ${p}menu — Ver menú
-• ${p}ping — Latencia
-• ${p}ayudagrupo — Ayuda de grupo
-
-📥 *DESCARGAS*
-• ${p}yts — Buscar YouTube
-• ${p}yta — Audio
-• ${p}ytv — Video
-
-👮 *ADMINISTRACIÓN*
-• ${p}kick @usuario
-• ${p}promote @usuario
-• ${p}demote @usuario
-• ${p}antilink on/off
-• ${p}welcome on/off
-
-🛠️ *HERRAMIENTAS*
-• ${p}qr — Generar QR`;
-
-    try {
-      await sock.sendMessage(
-        contexto.chatId,
-        { image: { url: config.menuImage }, caption: textoFallback },
-        { quoted: info }
-      );
-    } catch {
-      await sock.sendMessage(contexto.chatId, { text: textoFallback }, { quoted: info });
-    }
+    // Fallback rápido sin imagen
+    await sock.sendMessage(contexto.chatId, {
+      text: `${texto}\n\n_Escribe el comando directamente_`,
+    }, { quoted: info });
   }
 }
