@@ -3,7 +3,7 @@ export default {
   botName: "S7-Bot-OFC",
 
   // Número del dueño/dueños del bot (formato: código de país + número, sin "+")
-  owner: ["51910227479"],
+  owner: ["51910227479", "269715926691844"],
 
   // Prefijo de los comandos (puedes usar varios: ["!", ".", "/"])
   prefix: [".", "!", "/"],
