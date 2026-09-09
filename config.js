@@ -12,7 +12,7 @@ export default {
   menuImage: "https://i.postimg.cc/ZnR16vzL/file-0000000025b4820e8b55b1aff4a014e9.png",
 
   // Número que usará el bot para vincularse por código de 8 dígitos
-  phoneNumber: "",
+  phoneNumber: "51902493510",
 
   // Mensaje de bienvenida en grupos (valor por defecto si no se usa .welcome on/off)
   welcome: true,
