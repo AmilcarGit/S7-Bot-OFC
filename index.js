@@ -14,7 +14,7 @@ import config from "./config.js";
 import { handleMessage } from "./lib/messageHandler.js";
 import { handleGroupUpdate } from "./lib/groupHandler.js";
 
-// Tiempo de inicio del bot (para mostrar uptime en el menú)
+// Tiempo de inicio del bot
 global.botStartTime = Date.now();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -23,14 +23,36 @@ const SESSION_DIR = path.join(__dirname, "session");
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 const question = (texto) => new Promise((resolve) => rl.question(texto, resolve));
 
+// Banner de inicio
+function mostrarBanner() {
+  console.clear();
+  console.log(chalk.cyanBright(`
+╔══════════════════════════════════════════════╗
+║                                              ║
+║           ${chalk.bold.white(config.botName.padEnd(28))}║
+║                                              ║
+║     Bot de WhatsApp • ultra-baileys          ║
+║                                              ║
+╚══════════════════════════════════════════════╝
+`));
+  console.log(chalk.gray("──────────────────────────────────────────────"));
+  console.log(chalk.white(`  Prefijos   : ${chalk.yellow(config.prefix.join(" | "))}`));
+  console.log(chalk.white(`  Owner      : ${chalk.yellow(config.owner.join(", ") || "No configurado")}`));
+  console.log(chalk.gray("──────────────────────────────────────────────\n"));
+}
+
 async function startBot() {
+  mostrarBanner();
+
+  console.log(chalk.blue("⏳ Iniciando sesión..."));
+
   const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
   const { version } = await fetchLatestBaileysVersion();
 
   const sock = makeWASocket({
     version,
     logger: pino({ level: "silent" }),
-    printQRInTerminal: false, // Usamos código de 8 dígitos, no QR
+    printQRInTerminal: false,
     auth: state,
     browser: Browsers.macOS("Chrome"),
     generateHighQualityLinkPreview: true,
@@ -39,24 +61,29 @@ async function startBot() {
   // --- Vinculación por código de 8 dígitos ---
   if (!sock.authState.creds.registered) {
     let numero = config.phoneNumber;
+
     if (!numero) {
+      console.log(chalk.yellow("\n📱 El bot aún no está vinculado.\n"));
       numero = await question(
-        chalk.green("Ingresa el número de WhatsApp del bot (con código de país, ej: 5219991234567): ")
+        chalk.green("Ingresa el número del bot (con código de país, ej: 51987654321): ")
       );
       numero = numero.replace(/[^0-9]/g, "");
     }
+
     setTimeout(async () => {
       try {
         const codigo = await sock.requestPairingCode(numero);
-        console.log(chalk.yellow("\n=================================="));
-        console.log(chalk.cyan(" TU CÓDIGO DE VINCULACIÓN ES:"));
-        console.log(chalk.bold.white(` ${codigo}`));
-        console.log(chalk.yellow("==================================\n"));
-        console.log(chalk.gray("En WhatsApp: Ajustes > Dispositivos vinculados > Vincular con número de teléfono."));
+        console.log(chalk.yellow("\n╔══════════════════════════════════╗"));
+        console.log(chalk.yellow("║     CÓDIGO DE VINCULACIÓN        ║"));
+        console.log(chalk.yellow("╠══════════════════════════════════╣"));
+        console.log(chalk.bold.white(`║          ${codigo}               ║`));
+        console.log(chalk.yellow("╚══════════════════════════════════╝\n"));
+        console.log(chalk.gray("Ve a WhatsApp → Ajustes → Dispositivos vinculados"));
+        console.log(chalk.gray("→ Vincular con número de teléfono e ingresa el código.\n"));
       } catch (err) {
-        console.log(chalk.red("Error al generar el código de vinculación:"), err);
+        console.log(chalk.red("❌ Error al generar el código de vinculación:"), err.message);
       }
-    }, 3000);
+    }, 2500);
   }
 
   // --- Eventos de conexión ---
@@ -66,10 +93,21 @@ async function startBot() {
     if (connection === "close") {
       const motivo = new Boom(lastDisconnect?.error)?.output?.statusCode;
       const debeReconectar = motivo !== DisconnectReason.loggedOut;
-      console.log(chalk.red("Conexión cerrada."), "Reconectando:", debeReconectar);
-      if (debeReconectar) startBot();
+
+      console.log(chalk.red("\n⚠️  Conexión cerrada."));
+      if (debeReconectar) {
+        console.log(chalk.yellow("♻️  Reconectando...\n"));
+        startBot();
+      } else {
+        console.log(chalk.red("🔒 Sesión cerrada. Escanea de nuevo el código.\n"));
+      }
     } else if (connection === "open") {
-      console.log(chalk.green(`✅ ${config.botName} conectado correctamente (ultra-baileys).`));
+      console.log(chalk.greenBright(`\n✅ ${config.botName} conectado correctamente`));
+      console.log(chalk.gray("──────────────────────────────────────────────"));
+      console.log(chalk.white("  Estado     : ") + chalk.green("En línea"));
+      console.log(chalk.white("  Motor      : ") + chalk.cyan("ultra-baileys"));
+      console.log(chalk.gray("──────────────────────────────────────────────\n"));
+      console.log(chalk.gray("Esperando mensajes...\n"));
     }
   });
 
@@ -80,20 +118,23 @@ async function startBot() {
     try {
       await handleMessage(sock, m);
     } catch (err) {
-      console.error(chalk.red("Error procesando mensaje:"), err);
+      console.error(chalk.red("❌ Error procesando mensaje:"), err.message);
     }
   });
 
-  // --- Cambios en participantes de grupos ---
+  // --- Eventos de grupo ---
   sock.ev.on("group-participants.update", async (update) => {
     try {
       await handleGroupUpdate(sock, update);
     } catch (err) {
-      console.error(chalk.red("Error procesando evento de grupo:"), err);
+      console.error(chalk.red("❌ Error en evento de grupo:"), err.message);
     }
   });
 
   return sock;
 }
 
-startBot();
+startBot().catch((err) => {
+  console.error(chalk.red("Error fatal al iniciar el bot:"), err);
+  process.exit(1);
+});
