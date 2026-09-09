@@ -31,8 +31,12 @@ export async function ejecutar(sock, info, args, contexto) {
       "https://api-orbit-9doj.onrender.com/api/v1/tools/qr",
       {
         params: {
-          apikey: process.env.ORBIT_API_KEY || config.orbitApiKey,
+          apikey: config.orbitApiKey,
           text: texto,
+        },
+        headers: {
+          "x-api-key": config.orbitApiKey,
+          "x-orbit-ip": config.orbitIp,
         },
         responseType: "arraybuffer",
         timeout: 20000,
