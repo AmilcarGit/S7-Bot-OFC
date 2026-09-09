@@ -29,5 +29,19 @@ export async function ejecutar(sock, info, args, contexto) {
 
 _Escribe cualquier comando, ejemplo: ${p}ping_`;
 
+  // Usa la imagen ya precargada en memoria (global.menuImageBuffer, cargada
+  // una sola vez al iniciar el bot en index.js). Si no cargó, manda solo texto.
+  if (global.menuImageBuffer) {
+    try {
+      return await sock.sendMessage(
+        contexto.chatId,
+        { image: global.menuImageBuffer, caption: texto },
+        { quoted: info }
+      );
+    } catch (err) {
+      console.error("No se pudo enviar la imagen del menú, mandando solo texto:", err.message);
+    }
+  }
+
   await sock.sendMessage(contexto.chatId, { text: texto }, { quoted: info });
 }
