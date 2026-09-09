@@ -10,9 +10,15 @@ const PM2_PROCESS_NAME = process.env.PM2_NAME || "s7-bot-ofc";
 
 export async function ejecutar(sock, info, args, contexto) {
   if (!contexto.esOwner) {
+    const detectados = (contexto.idsRemitente || []).join(", ") || "desconocido";
     return sock.sendMessage(
       contexto.chatId,
-      { text: "❌ Solo el owner del bot puede usar este comando." },
+      {
+        text:
+          `❌ Solo el owner del bot puede usar este comando.\n\n` +
+          `🔍 ID detectado: ${detectados}\n` +
+          `Si eres el owner, agrega ese ID a "owner" en config.js.`,
+      },
       { quoted: info }
     );
   }
