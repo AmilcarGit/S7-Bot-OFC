@@ -10,12 +10,16 @@ import chalk from "chalk";
 import readline from "readline";
 import path from "path";
 import { fileURLToPath } from "url";
+import axios from "axios";
 import config from "./config.js";
 import { handleMessage } from "./lib/messageHandler.js";
 import { handleGroupUpdate } from "./lib/groupHandler.js";
 
 // Tiempo de inicio del bot
 global.botStartTime = Date.now();
+
+// Imagen del menú en memoria
+global.menuImageBuffer = null;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SESSION_DIR = path.join(__dirname, "session");
@@ -39,6 +43,22 @@ function mostrarBanner() {
   console.log(chalk.white(`  Prefijos   : ${chalk.yellow(config.prefix.join(" | "))}`));
   console.log(chalk.white(`  Owner      : ${chalk.yellow(config.owner.join(", ") || "No configurado")}`));
   console.log(chalk.gray("──────────────────────────────────────────────\n"));
+}
+
+// Cargar imagen del menú una sola vez
+async function cargarImagenMenu() {
+  try {
+    console.log(chalk.blue("🖼️  Cargando imagen del menú..."));
+    const response = await axios.get(config.menuImage, {
+      responseType: "arraybuffer",
+      timeout: 15000,
+    });
+    global.menuImageBuffer = Buffer.from(response.data);
+    console.log(chalk.green("✅ Imagen del menú cargada en memoria"));
+  } catch (err) {
+    console.log(chalk.yellow("⚠️  No se pudo cargar la imagen del menú:", err.message));
+    global.menuImageBuffer = null;
+  }
 }
 
 // Extraer texto del mensaje para mostrar en logs
@@ -71,6 +91,9 @@ async function startBot() {
     browser: Browsers.macOS("Chrome"),
     generateHighQualityLinkPreview: true,
   });
+
+  // Cargar imagen del menú
+  await cargarImagenMenu();
 
   // --- Vinculación por código de 8 dígitos ---
   if (!sock.authState.creds.registered) {
