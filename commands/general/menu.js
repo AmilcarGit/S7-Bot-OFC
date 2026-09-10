@@ -41,17 +41,13 @@ export async function ejecutar(sock, info, args, contexto) {
 
 _Escribe cualquier comando, ejemplo: ${p}ping_`;
 
-  if (global.menuImageBuffer) {
-    try {
-      return await sock.sendMessage(
-        contexto.chatId,
-        { image: global.menuImageBuffer, caption: texto },
-        { quoted: info }
-      );
-    } catch (err) {
-      console.error("No se pudo enviar la imagen del menú, mandando solo texto:", err.message);
-    }
-  }
-
+  // El texto se manda YA, sin esperar la imagen (que es lo que tarda).
   await sock.sendMessage(contexto.chatId, { text: texto }, { quoted: info });
+
+  // La imagen va aparte, en paralelo. Si falla o tarda, no afecta la respuesta.
+  if (global.menuImageBuffer) {
+    sock
+      .sendMessage(contexto.chatId, { image: global.menuImageBuffer })
+      .catch((err) => console.error("No se pudo enviar la imagen del menú:", err.message));
+  }
 }
