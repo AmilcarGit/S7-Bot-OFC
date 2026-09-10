@@ -17,6 +17,14 @@ export async function ejecutar(sock, info, args, contexto) {
 ┃ ${p}yta — Descargar audio
 ┃ ${p}ytv — Descargar video
 
+✨ *ANIME*
+┃ ${p}anime — Galería anime
+┃ ${p}anime waifu
+┃ ${p}anime neko
+┃ ${p}anime kitsune
+┃ ${p}anime husbando
+┃ ${p}anime hug / kiss / pat...
+
 👮 *ADMINISTRACIÓN*
 ┃ ${p}kick @usuario — Expulsar
 ┃ ${p}promote @usuario — Hacer admin
@@ -27,10 +35,11 @@ export async function ejecutar(sock, info, args, contexto) {
 🛠️ *HERRAMIENTAS*
 ┃ ${p}qr — Generar código QR
 
+👑 *OWNER*
+┃ ${p}update — Actualizar bot
+
 _Escribe cualquier comando, ejemplo: ${p}ping_`;
 
-  // Usa la imagen ya precargada en memoria (global.menuImageBuffer, cargada
-  // una sola vez al iniciar el bot en index.js). Si no cargó, manda solo texto.
   if (global.menuImageBuffer) {
     try {
       return await sock.sendMessage(
@@ -39,7 +48,7 @@ _Escribe cualquier comando, ejemplo: ${p}ping_`;
         { quoted: info }
       );
     } catch (err) {
-      console.error("No se pudo enviar la imagen del menú, mandando solo texto:", err.message);
+      console.error("No se pudo enviar la imagen del menú:", err.message);
     }
   }
 
