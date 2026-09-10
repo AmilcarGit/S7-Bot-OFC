@@ -10,7 +10,7 @@ export async function ejecutar(sock, info, args, contexto) {
   if (!url) {
     return sock.sendMessage(
       contexto.chatId,
-      { text: `❌ *Falta el enlace de YouTube*\n\n📌 Uso:\n${p}ytv <url>\n\n📝 Ejemplo:\n${p}ytv https://youtu.be/h_qaIfL9-UU` },
+      { text: `╭━━━〔 🎬 VIDEO 〕━━━╮\n┃ ⚠️ Falta el enlace de YouTube.\n┃ 📌 Ejemplo:\n┃ ${p}ytv https://youtu.be/h_qaIfL9-UU\n╰━━━━━━━━━━━━━━━━━━━━╯` },
       { quoted: info }
     );
   }
@@ -18,7 +18,7 @@ export async function ejecutar(sock, info, args, contexto) {
   if (!/^https?:\/\/(?:www\.)?(?:youtube\.com\/|youtu\.be\/)/i.test(url)) {
     return sock.sendMessage(
       contexto.chatId,
-      { text: `❌ *Enlace de YouTube inválido*\n\nSolo se aceptan enlaces de:\n• youtube.com\n• youtu.be` },
+      { text: `╭━━━〔 ❌ ENLACE INVÁLIDO 〕━━━╮\n┃ Solo se aceptan enlaces de:\n┃ • youtube.com\n┃ • youtu.be\n╰━━━━━━━━━━━━━━━━━━━━╯` },
       { quoted: info }
     );
   }
@@ -26,7 +26,7 @@ export async function ejecutar(sock, info, args, contexto) {
   try {
     await sock.sendMessage(
       contexto.chatId,
-      { text: `🎬 *DESCARGANDO VIDEO*\n\n🔗 YouTube detectado\n⏳ Procesando el video...\n\n⚡ Espera un momento...` },
+      { text: `╭━━━〔 🎬 DESCARGANDO VIDEO 〕━━━╮\n┃ 🔗 YouTube detectado\n┃ ⏳ Procesando, espera un momento...\n╰━━━━━━━━━━━━━━━━━━━━╯` },
       { quoted: info }
     );
 
@@ -46,25 +46,38 @@ export async function ejecutar(sock, info, args, contexto) {
     const videoUrl = data.datos.url;
     if (!/^https?:\/\//i.test(videoUrl)) throw new Error("La URL del video no es válida");
 
+    // Descargamos el archivo nosotros mismos con headers de navegador,
+    // porque Lempi bloquea (403) las descargas "directas" sin User-Agent/Referer.
+    const descarga = await fetch(videoUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        Referer: "https://lempi.lat/",
+        Accept: "*/*",
+      },
+    });
+
+    if (!descarga.ok) {
+      throw new Error(`No se pudo descargar el archivo de video (HTTP ${descarga.status})`);
+    }
+
+    const videoBuffer = Buffer.from(await descarga.arrayBuffer());
+
     const caption =
       `╭━━━〔 🎬 YOUTUBE VIDEO 〕━━━╮\n` +
-      `┃\n` +
-      `┃ 🎵 *${data.titulo || "Video de YouTube"}*\n` +
-      `┃\n` +
+      `┃ 🎵 ${data.titulo || "Video de YouTube"}\n` +
       `┃ 📺 Canal: ${data.canal || "Desconocido"}\n` +
       `┃ ⏱️ Duración: ${data.duracion || "Desconocida"}\n` +
       `┃ 🎞️ Calidad: ${data.datos.calidad || "Desconocida"}\n` +
       `┃ 💾 Tamaño: ${data.datos.tamaño || "Desconocido"}\n` +
       `┃ 📁 Formato: ${data.datos.extension || ".mp4"}\n` +
-      `┃\n` +
-      `┃ ⚡ *Descargado con Lempi API*\n` +
-      `┃\n` +
+      `┃ ⚡ Descargado con Lempi API\n` +
       `╰━━━━━━━━━━━━━━━━━━━━╯`;
 
     await sock.sendMessage(
       contexto.chatId,
       {
-        video: { url: videoUrl },
+        video: videoBuffer,
         mimetype: "video/mp4",
         fileName: data.datos.archivo || "youtube-video.mp4",
         caption,
@@ -76,7 +89,14 @@ export async function ejecutar(sock, info, args, contexto) {
     console.error("[YTV]", error);
     await sock.sendMessage(
       contexto.chatId,
-      { text: `❌ *Error descargando el video*\n\n> ${error.message || "Error desconocido"}\n\n💡 La API puede estar temporalmente caída o el video no estar disponible.` },
+      {
+        text:
+          `╭━━━〔 ❌ ERROR 〕━━━╮\n` +
+          `┃ No se pudo descargar el video.\n` +
+          `┃ ${error.message || "Error desconocido"}\n` +
+          `┃ 💡 La API puede estar caída o el video no disponible.\n` +
+          `╰━━━━━━━━━━━━━━━━━━━━╯`,
+      },
       { quoted: info }
     );
   }
