@@ -16,5 +16,5 @@ export default {
   // 🔑 Credenciales de Orbit API (dashboard: orbit-cloud.onrender.com/dashboard)
   // Si regeneras la Orbit IP desde el dashboard, solo actualiza esta línea.
   orbitApiKey: process.env.ORBIT_API_KEY || "ORBIT-4096939993",
-  orbitIp: process.env.ORBIT_IP || "10.216.132.106",
+  orbitIp: process.env.ORBIT_IP || "10.190.146.217",
 };
