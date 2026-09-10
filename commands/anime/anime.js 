@@ -1,0 +1,24 @@
+import config from "../../config.js";
+import { enviarAnime, TIPOS_VALIDOS } from "../../lib/animeApi.js";
+
+export async function ejecutar(sock, info, args, contexto) {
+  const p = config.prefix[0];
+  const tipo = (args[0] || "").toLowerCase();
+
+  if (!tipo || !TIPOS_VALIDOS.includes(tipo)) {
+    return sock.sendMessage(
+      contexto.chatId,
+      {
+        text:
+          `╭━━━〔 ✨ ANIME 〕━━━╮\n` +
+          `┃ 📌 Uso: ${p}anime <tipo>\n` +
+          `┃ 📋 Tipos válidos:\n` +
+          `┃ ${TIPOS_VALIDOS.join(", ")}\n` +
+          `╰━━━━━━━━━━━━━━━━━━━━╯`,
+      },
+      { quoted: info }
+    );
+  }
+
+  await enviarAnime(sock, info, contexto, tipo);
+}
