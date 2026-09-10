@@ -21,14 +21,16 @@ export async function ejecutar(sock, info, args, contexto) {
   const p = config.prefix[0];
   const tipo = (args[0] || "").toLowerCase();
 
-  // Si ya escribió un tipo válido (ej: ".anime neko"), lo manda directo.
+  // Si ya escribió un tipo válido (ej: .anime neko), lo manda directo
   if (tipo && TIPOS_VALIDOS.includes(tipo)) {
     return enviarAnime(sock, info, contexto, tipo);
   }
 
-  // Sin tipo (o inválido) -> mostramos la lista para elegir con un toque.
+  // Sin tipo (o inválido) -> lista para elegir
   await enviarLista(sock, contexto.chatId, {
-    texto: `╭━━━〔 ✨ ANIME 〕━━━╮\n┃ Elige qué imagen quieres ver\n╰━━━━━━━━━━━━━━━━━━━━╯`,
+    texto: `╭━━━〔 ✨ ANIME 〕━━━╮
+┃ Elige qué imagen quieres ver
+╰━━━━━━━━━━━━━━━━━━━━╯`,
     footer: "Vía Orbit API",
     titulo: "Galería Anime",
     textoBoton: "🎨 Ver tipos",
@@ -38,7 +40,7 @@ export async function ejecutar(sock, info, args, contexto) {
         titulo: "Tipos disponibles",
         filas: TIPOS_VALIDOS.map((t) => ({
           titulo: `${EMOJIS[t] || "✨"} ${t.charAt(0).toUpperCase() + t.slice(1)}`,
-          id: `${p}${t}`,
+          id: `${p}anime ${t}`,
           descripcion: `Ver una imagen de tipo "${t}"`,
         })),
       },
