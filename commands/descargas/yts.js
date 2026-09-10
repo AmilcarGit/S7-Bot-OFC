@@ -2,6 +2,7 @@ export const alias = ["ytsearch"];
 
 import config from "../../config.js";
 import { orbitGet } from "../../lib/orbit.js";
+import { enviarLista } from "../../lib/botones.js";
 import {
   claveBusqueda,
   limpiarBusquedasVencidas,
@@ -54,17 +55,23 @@ export async function ejecutar(sock, info, args, contexto) {
     const clave = claveBusqueda(contexto.chatId, contexto.remitente);
     guardarBusqueda(clave, resultados);
 
-    let texto = `🔎 *Resultados para:* ${query}\n\n`;
-
-    resultados.forEach((video, i) => {
-      texto += `*${i + 1}.* ${video.title || "Sin título"}\n`;
-      texto += `👤 ${video.author || "Desconocido"} | ⏱️ ${video.duration || "?"}\n`;
-      texto += `🔗 ${video.url}\n\n`;
+    await enviarLista(sock, contexto.chatId, {
+      texto: `🔎 *Resultados para:* ${query}\n\n🎬 Encontrados: ${resultados.length}\n\n👇 Toca uno para elegir audio o video`,
+      footer: "Orbit YouTube Search · expira en 3 minutos",
+      titulo: "YouTube Search",
+      textoBoton: "📋 Ver resultados",
+      mensajeCitado: info,
+      secciones: [
+        {
+          titulo: `${resultados.length} resultado(s)`,
+          filas: resultados.map((video, i) => ({
+            titulo: (video.title || "Sin título").slice(0, 60),
+            id: `${p}ytsver ${i}`,
+            descripcion: `${(video.author || "Desconocido").slice(0, 35)} · ${video.duration || "?"}`,
+          })),
+        },
+      ],
     });
-
-    texto += `_Para descargar, usa:_\n${p}yta <enlace> _o_ ${p}ytv <enlace>`;
-
-    await sock.sendMessage(contexto.chatId, { text: texto }, { quoted: info });
   } catch (error) {
     console.error("[YTS]", error);
     await sock.sendMessage(
