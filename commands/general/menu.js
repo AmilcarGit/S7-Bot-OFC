@@ -17,14 +17,6 @@ export async function ejecutar(sock, info, args, contexto) {
 ┃ ${p}yta — Descargar audio
 ┃ ${p}ytv — Descargar video
 
-✨ *ANIME*
-┃ ${p}anime — Galería anime
-┃ ${p}anime waifu
-┃ ${p}anime neko
-┃ ${p}anime kitsune
-┃ ${p}anime husbando
-┃ ${p}anime hug / kiss / pat...
-
 👮 *ADMINISTRACIÓN*
 ┃ ${p}kick @usuario — Expulsar
 ┃ ${p}promote @usuario — Hacer admin
@@ -32,11 +24,20 @@ export async function ejecutar(sock, info, args, contexto) {
 ┃ ${p}antilink on/off — Antilink
 ┃ ${p}welcome on/off — Bienvenida
 
+✨ *ANIME*
+┃ ${p}anime — Elegir tipo (lista)
+┃ ${p}waifu, ${p}neko, ${p}pat, ${p}hug...
+
+💰 *ECONOMÍA (S7Coins)*
+┃ ${p}daily — Reclamar diario
+┃ ${p}saldo — Ver tu saldo
+┃ ${p}transferir @user <cant> — Enviar
+┃ ${p}top — Ranking
+┃ ${p}shop — Tienda de títulos
+┃ ${p}rob @user — Intentar robar
+
 🛠️ *HERRAMIENTAS*
 ┃ ${p}qr — Generar código QR
-
-👑 *OWNER*
-┃ ${p}update — Actualizar bot
 
 _Escribe cualquier comando, ejemplo: ${p}ping_`;
 
@@ -48,7 +49,7 @@ _Escribe cualquier comando, ejemplo: ${p}ping_`;
         { quoted: info }
       );
     } catch (err) {
-      console.error("No se pudo enviar la imagen del menú:", err.message);
+      console.error("No se pudo enviar la imagen del menú, mandando solo texto:", err.message);
     }
   }
 
