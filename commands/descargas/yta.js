@@ -1,7 +1,7 @@
-import config from "../../config.js";
+export const alias = ["ytaudio"];
 
-const API_KEY = process.env.ORBIT_API_KEY || "ORBIT-4096939993";
-const API_URL = "https://api-orbit-9doj.onrender.com/api/v1/download/ytaudio";
+import config from "../../config.js";
+import { orbitGet } from "../../lib/orbit.js";
 
 function extraerVideoId(url) {
   const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
@@ -35,11 +35,8 @@ export async function ejecutar(sock, info, args, contexto) {
       { quoted: info }
     );
 
-    const apiUrl = `${API_URL}?apikey=${encodeURIComponent(API_KEY)}&url=${encodeURIComponent(youtubeUrl)}`;
-    const response = await fetch(apiUrl);
-    if (!response.ok) throw new Error(`API HTTP ${response.status}`);
+    const data = await orbitGet("/download/ytaudio", { url: youtubeUrl });
 
-    const data = await response.json();
     if (!data || data.status !== true || !data.download_url) {
       throw new Error("Orbit no devolvio un enlace de descarga valido");
     }
@@ -72,7 +69,11 @@ export async function ejecutar(sock, info, args, contexto) {
     console.error("[YTA]", error);
     await sock.sendMessage(
       contexto.chatId,
-      { text: `No se pudo descargar el audio\n\n> ${error.message || "Error desconocido"}` },
+      {
+        text:
+          `No se pudo descargar el audio\n\n> ${error.message || "Error desconocido"}\n\n` +
+          `_Si es HTTP 403, revisa que la Orbit IP en config.js sea la actual del dashboard._`,
+      },
       { quoted: info }
     );
   }
