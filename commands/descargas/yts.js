@@ -10,7 +10,7 @@ import {
 } from "../../lib/ytsStore.js";
 
 async function buscarEnYoutube(query) {
-  const data = await orbitGet("/search", { query });
+  const data = await orbitGet("/busqueda", { query });
 
   if (!data || data.status !== true || !Array.isArray(data.results)) {
     throw new Error("La API de Orbit no devolvió resultados válidos");
