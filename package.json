@@ -13,7 +13,7 @@
     "baileys": "github:russellxz/ultra-baileys",
     "libsignal": "npm:libsignal-node@latest",
     "@hapi/boom": "^10.0.1",
-    "pino": "^9.3.2",
+    "pino": "^10.4.0",
     "chalk": "^4.1.2",
     "axios": "^1.7.7",
     "fs-extra": "^11.2.0"
